@@ -411,17 +411,43 @@ window.Charts = (() => {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         // Determine days count based on range
         let daysCount = 30;
-        if (range === '7') daysCount = 7;
-        else if (range === '30') daysCount = 30;
-        else if (range === '90') daysCount = 90;
-        else if (range === 'all') daysCount = 180; // default to last 180 days for 'all'
+        if (range === '7') {
+            daysCount = 7;
+        } else if (range === '30') {
+            daysCount = 30;
+        } else if (range === '90') {
+            daysCount = 90;
+        } else if (range === 'all') {
+            if (allTasks && allTasks.length > 0) {
+                // Find the oldest task date (format YYYY-MM-DD)
+                const oldestTask = allTasks.reduce((oldest, current) => {
+                    return (current.date && current.date < oldest.date) ? current : oldest;
+                }, allTasks[0]);
+
+                if (oldestTask && oldestTask.date) {
+                    const oldestDate = new Date(oldestTask.date);
+                    oldestDate.setHours(0, 0, 0, 0);
+                    
+                    // Calculate difference in days
+                    const diffTime = Math.abs(today - oldestDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    daysCount = Math.max(diffDays + 1, 7); // Show at least 7 days
+                } else {
+                    daysCount = 30;
+                }
+            } else {
+                daysCount = 7;
+            }
+        }
 
         // Build days data
         const labels = [];
         const rateData = [];
-        const today = new Date();
 
         for (let i = daysCount - 1; i >= 0; i--) {
             const d = new Date(today);
@@ -435,7 +461,7 @@ window.Charts = (() => {
                 const completed = dayTasks.filter(t => t.completed).length;
                 rateData.push(Math.round((completed / dayTasks.length) * 100));
             } else {
-                rateData.push(0); // Set 0% for days without tasks to draw a continuous line
+                rateData.push(null); // Keep null to avoid showing fake 0% drops when there were no tasks
             }
         }
 

@@ -81,6 +81,7 @@ window.UI = (() => {
         els.weeklyAnalysisPercentage = document.getElementById('weekly-analysis-percentage');
         els.monthlyAnalysisValue = document.getElementById('monthly-analysis-value');
         els.monthlyAnalysisPercentage = document.getElementById('monthly-analysis-percentage');
+        els.overallChartTitle = document.getElementById('overall-chart-title');
     }
 
     // ── Date helpers ─────────────────────────────────────────────────
@@ -426,6 +427,14 @@ window.UI = (() => {
     }
 
     function renderStatsView(allTasks, range = '30') {
+        // Update overall chart title based on range
+        if (els.overallChartTitle) {
+            if (range === '7') els.overallChartTitle.textContent = 'Son 7 Gün İlerleme';
+            else if (range === '30') els.overallChartTitle.textContent = 'Son 30 Gün İlerleme';
+            else if (range === '90') els.overallChartTitle.textContent = 'Son 90 Gün İlerleme';
+            else if (range === 'all') els.overallChartTitle.textContent = 'Tüm Zamanlar İlerleme';
+        }
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
