@@ -250,29 +250,41 @@ window.Charts = (() => {
         const scaleOpts = getScaleOptions();
 
         weeklyChart = new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: dayLabels,
                 datasets: [
                     {
-                        label: 'Tamamlanan',
-                        data: completedData,
-                        backgroundColor: COLORS.success,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                        barPercentage: 0.6,
-                        categoryPercentage: 0.7
+                        label: 'Toplam Görev',
+                        data: totalData,
+                        borderColor: COLORS.accent,
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointBackgroundColor: COLORS.accent,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     },
                     {
-                        label: 'Toplam',
-                        data: totalData,
-                        backgroundColor: COLORS.accentAlpha,
-                        borderColor: COLORS.accent,
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                        barPercentage: 0.6,
-                        categoryPercentage: 0.7
+                        label: 'Tamamlanan',
+                        data: completedData,
+                        borderColor: COLORS.success,
+                        backgroundColor: ctx.createLinearGradient ? (() => {
+                            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height || 200);
+                            grad.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
+                            grad.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+                            return grad;
+                        })() : COLORS.successLight,
+                        fill: true,
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointBackgroundColor: COLORS.success,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }
                 ]
             },
@@ -447,7 +459,8 @@ window.Charts = (() => {
 
         // Build days data
         const labels = [];
-        const rateData = [];
+        const totalData = [];
+        const completedData = [];
 
         for (let i = daysCount - 1; i >= 0; i--) {
             const d = new Date(today);
@@ -458,10 +471,14 @@ window.Charts = (() => {
 
             const dayTasks = allTasks.filter(t => t.date === dateStr);
             if (dayTasks.length > 0) {
-                const completed = dayTasks.filter(t => t.completed).length;
-                rateData.push(Math.round((completed / dayTasks.length) * 100));
+                const totalCount = dayTasks.length;
+                const completedCount = dayTasks.filter(t => t.completed).length;
+                totalData.push(totalCount);
+                completedData.push(completedCount);
             } else {
-                rateData.push(null); // Keep null to avoid showing fake 0% drops when there were no tasks
+                // Keep null to avoid showing fake 0 values when there were no tasks
+                totalData.push(null);
+                completedData.push(null);
             }
         }
 
@@ -471,33 +488,49 @@ window.Charts = (() => {
             overallChart = null;
         }
 
-        const commonOpts = getCommonOptions(false);
+        const commonOpts = getCommonOptions(true);
         const theme = getThemeColors();
 
-        // Create gradient
+        // Create gradient for completed tasks line
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.3)');
-        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.02)');
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
 
         overallChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels,
-                datasets: [{
-                    label: 'Tamamlanma Oranı (%)',
-                    data: rateData,
-                    borderColor: COLORS.accent,
-                    backgroundColor: gradient,
-                    fill: true,
-                    borderWidth: 2.5,
-                    tension: 0.4,
-                    pointBackgroundColor: COLORS.accent,
-                    pointBorderColor: isDark() ? '#1e293b' : '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 3,
-                    pointHoverRadius: 6,
-                    spanGaps: true
-                }]
+                datasets: [
+                    {
+                        label: 'Toplam Görev',
+                        data: totalData,
+                        borderColor: COLORS.accent,
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointBackgroundColor: COLORS.accent,
+                        pointBorderColor: isDark() ? '#1e293b' : '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        spanGaps: true
+                    },
+                    {
+                        label: 'Tamamlanan',
+                        data: completedData,
+                        borderColor: COLORS.success,
+                        backgroundColor: gradient,
+                        fill: true,
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointBackgroundColor: COLORS.success,
+                        pointBorderColor: isDark() ? '#1e293b' : '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        spanGaps: true
+                    }
+                ]
             },
             options: {
                 ...commonOpts,
@@ -516,12 +549,11 @@ window.Charts = (() => {
                     },
                     y: {
                         beginAtZero: true,
-                        max: 100,
                         ticks: {
                             color: theme.text,
                             font: { family: 'Inter', size: 11 },
-                            callback: value => `%${value}`,
-                            stepSize: 25
+                            stepSize: 1,
+                            precision: 0
                         },
                         grid: {
                             color: theme.grid,

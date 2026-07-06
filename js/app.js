@@ -232,10 +232,10 @@ window.App = (() => {
                 return;
             }
 
-            // Calendar day click -> switch to daily view
-            const calendarDay = target.closest('.calendar-day:not(.empty)');
-            if (calendarDay) {
-                const dateStr = calendarDay.dataset.date;
+            // Calendar cell click -> switch to daily view
+            const calendarCell = target.closest('.calendar-cell:not(.empty)');
+            if (calendarCell) {
+                const dateStr = calendarCell.dataset.date;
                 if (!dateStr) return;
 
                 const [y, m, d] = dateStr.split('-').map(Number);

@@ -367,24 +367,20 @@ window.UI = (() => {
             tasksByDate[t.date].push(t);
         });
 
-        // Calendar header
+        // Calendar header (direct children of calendar-grid)
         const dayHeaders = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
         let html = '<div class="calendar-grid">';
-        html += '<div class="calendar-header-row">';
         dayHeaders.forEach(d => {
             html += `<div class="calendar-header-cell">${d}</div>`;
         });
-        html += '</div>';
 
         // Offset for first day (Monday = 0)
         let firstDayOfWeek = firstDay.getDay(); // 0=Sun
         let offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
 
-        html += '<div class="calendar-body">';
-
         // Empty cells before first day
         for (let i = 0; i < offset; i++) {
-            html += '<div class="calendar-day empty"></div>';
+            html += '<div class="calendar-cell empty"></div>';
         }
 
         // Day cells
@@ -398,9 +394,9 @@ window.UI = (() => {
             const highPriorityTasks = pendingTasks.filter(t => t.priority === 'high');
 
             html += `
-                <div class="calendar-day ${isToday ? 'today' : ''} ${dayTasks.length > 0 ? 'has-tasks' : ''}" data-date="${dateStr}">
-                    <span class="calendar-day-number">${day}</span>
-                    <div class="calendar-day-dots">
+                <div class="calendar-cell ${isToday ? 'today' : ''} ${dayTasks.length > 0 ? 'has-tasks' : ''}" data-date="${dateStr}">
+                    <span class="calendar-date">${day}</span>
+                    <div class="calendar-dots">
                         ${completedTasks.length > 0 ? `<span class="calendar-dot completed" title="${completedTasks.length} tamamlanmış"></span>` : ''}
                         ${pendingTasks.length > 0 ? `<span class="calendar-dot pending" title="${pendingTasks.length} bekleyen"></span>` : ''}
                         ${highPriorityTasks.length > 0 ? `<span class="calendar-dot high-priority" title="${highPriorityTasks.length} yüksek öncelik"></span>` : ''}
@@ -414,10 +410,10 @@ window.UI = (() => {
         const totalCells = offset + lastDay.getDate();
         const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
         for (let i = 0; i < remainingCells; i++) {
-            html += '<div class="calendar-day empty"></div>';
+            html += '<div class="calendar-cell empty"></div>';
         }
 
-        html += '</div></div>';
+        html += '</div>';
         els.monthlyCalendarContainer.innerHTML = html;
 
         // Update chart
