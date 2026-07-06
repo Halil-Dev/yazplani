@@ -10,6 +10,7 @@ window.App = (() => {
     let unsubscribe = null;
     let reminderTimeouts = [];
     let lastRenderedTasks = []; // Cache for re-renders
+    let currentStatsRange = '30'; // Default stats view range (7, 30, 90, all)
 
     // ── Initialization ───────────────────────────────────────────────
 
@@ -150,6 +151,20 @@ window.App = (() => {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 window.UI.closeTaskModal();
+            }
+        });
+
+        // Stats range buttons
+        document.addEventListener('click', (e) => {
+            const rangeBtn = e.target.closest('.stats-range-btn');
+            if (rangeBtn) {
+                e.preventDefault();
+                document.querySelectorAll('.stats-range-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn === rangeBtn);
+                });
+                const range = rangeBtn.dataset.range;
+                currentStatsRange = range;
+                loadStatsView();
             }
         });
 
@@ -318,17 +333,10 @@ window.App = (() => {
 
     async function loadStatsView() {
         try {
-            // Get tasks from last 90 days
-            const today = new Date();
-            const past = new Date(today);
-            past.setDate(today.getDate() - 90);
-
-            const startStr = window.UI.formatDateISO(past);
-            const endStr = window.UI.formatDateISO(today);
-
-            const tasks = await window.DB.getTasksByDateRange(startStr, endStr);
+            // Get all tasks to calculate streaks, categories, weekly/monthly analyses, and apply ranges
+            const tasks = await window.DB.getAllTasks();
             lastRenderedTasks = tasks;
-            window.UI.renderStatsView(tasks);
+            window.UI.renderStatsView(tasks, currentStatsRange);
         } catch (error) {
             console.error('Load stats error:', error);
             if (window.UI && window.UI.showToast) {
@@ -432,6 +440,8 @@ window.App = (() => {
     // ── Public API ───────────────────────────────────────────────────
     return {
         get currentUser() { return currentUser; },
+        get currentStatsRange() { return currentStatsRange; },
+        set currentStatsRange(val) { currentStatsRange = val; },
         init,
         onUserLoggedIn,
         onUserLoggedOut,

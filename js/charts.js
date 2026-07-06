@@ -406,17 +406,24 @@ window.Charts = (() => {
 
     // ── Chart: Overall / Stats (Line – last 30 days) ─────────────────
 
-    function updateOverall(allTasks) {
+    function updateOverall(allTasks, range = '30') {
         const canvas = document.getElementById('overall-chart-canvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
 
-        // Build last 30 days data
+        // Determine days count based on range
+        let daysCount = 30;
+        if (range === '7') daysCount = 7;
+        else if (range === '30') daysCount = 30;
+        else if (range === '90') daysCount = 90;
+        else if (range === 'all') daysCount = 180; // default to last 180 days for 'all'
+
+        // Build days data
         const labels = [];
         const rateData = [];
         const today = new Date();
 
-        for (let i = 29; i >= 0; i--) {
+        for (let i = daysCount - 1; i >= 0; i--) {
             const d = new Date(today);
             d.setDate(today.getDate() - i);
             const dateStr = window.UI ? window.UI.formatDateISO(d) : '';

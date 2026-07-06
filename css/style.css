@@ -2040,3 +2040,80 @@ select.form-input {
         padding: 0 48px;
     }
 }
+
+/* ─── Stats Range Navigation ─── */
+.stats-range-btn {
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.stats-range-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
+}
+
+.stats-range-btn.active {
+    color: var(--accent);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+/* ─── Stats Analysis Grid ─── */
+.stats-analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.analysis-card {
+    padding: 20px 24px !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+}
+
+.analysis-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.analysis-header h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.analysis-icon {
+    font-size: 1.1rem;
+}
+
+.analysis-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.analysis-percentage {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .stats-analysis-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
+

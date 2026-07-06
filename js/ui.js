@@ -75,6 +75,12 @@ window.UI = (() => {
         els.sidebar = document.getElementById('sidebar');
         els.sidebarOverlay = document.getElementById('sidebar-overlay');
         els.searchInput = document.getElementById('search-input');
+        els.dateNav = document.getElementById('date-nav');
+        els.statsRangeNav = document.getElementById('stats-range-nav');
+        els.weeklyAnalysisValue = document.getElementById('weekly-analysis-value');
+        els.weeklyAnalysisPercentage = document.getElementById('weekly-analysis-percentage');
+        els.monthlyAnalysisValue = document.getElementById('monthly-analysis-value');
+        els.monthlyAnalysisPercentage = document.getElementById('monthly-analysis-percentage');
     }
 
     // ── Date helpers ─────────────────────────────────────────────────
@@ -153,8 +159,15 @@ window.UI = (() => {
             els.pageTitle.textContent = PAGE_TITLES[page] || '';
         }
 
-        // Update date label
-        updateDateLabel();
+        // Toggle header controls based on page
+        if (page === 'stats') {
+            if (els.dateNav) els.dateNav.style.display = 'none';
+            if (els.statsRangeNav) els.statsRangeNav.style.display = 'flex';
+        } else {
+            if (els.dateNav) els.dateNav.style.display = 'flex';
+            if (els.statsRangeNav) els.statsRangeNav.style.display = 'none';
+            updateDateLabel();
+        }
 
         // Close sidebar on mobile
         if (els.sidebar && els.sidebar.classList.contains('open')) {
@@ -412,23 +425,70 @@ window.UI = (() => {
         }
     }
 
-    function renderStatsView(tasks) {
-        const total = tasks.length;
-        const completed = tasks.filter(t => t.completed).length;
+    function renderStatsView(allTasks, range = '30') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // 1. Filter tasks based on selected range
+        let filteredTasks = allTasks;
+        if (range !== 'all') {
+            const daysCount = parseInt(range) || 30;
+            const pastDate = new Date(today);
+            pastDate.setDate(today.getDate() - daysCount + 1);
+            const startISO = formatDateISO(pastDate);
+            const endISO = formatDateISO(today);
+
+            filteredTasks = allTasks.filter(t => t.date >= startISO && t.date <= endISO);
+        }
+
+        const total = filteredTasks.length;
+        const completed = filteredTasks.filter(t => t.completed).length;
         const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-        // Calculate streak
-        const streak = calculateStreak(tasks);
+        // Calculate streak (always based on all tasks to keep consecutive days correct)
+        const streak = calculateStreak(allTasks);
 
         if (els.totalTasksStat) els.totalTasksStat.textContent = total;
         if (els.completedTasksStat) els.completedTasksStat.textContent = completed;
         if (els.streakStat) els.streakStat.textContent = streak;
         if (els.rateStat) els.rateStat.textContent = `%${rate}`;
 
-        // Category breakdown
+        // 2. Calculate Weekly Analysis (fixed to current week Monday-Sunday)
+        const weekRange = getWeekRange(new Date());
+        const weekStartISO = formatDateISO(weekRange.start);
+        const weekEndISO = formatDateISO(weekRange.end);
+        const weeklyTasks = allTasks.filter(t => t.date >= weekStartISO && t.date <= weekEndISO);
+        const weeklyTotal = weeklyTasks.length;
+        const weeklyCompleted = weeklyTasks.filter(t => t.completed).length;
+        const weeklyRate = weeklyTotal > 0 ? Math.round((weeklyCompleted / weeklyTotal) * 100) : 0;
+
+        if (els.weeklyAnalysisValue) {
+            els.weeklyAnalysisValue.textContent = `${weeklyCompleted} / ${weeklyTotal}`;
+        }
+        if (els.weeklyAnalysisPercentage) {
+            els.weeklyAnalysisPercentage.textContent = `%${weeklyRate} tamamlandı`;
+        }
+
+        // 3. Calculate Monthly Analysis (fixed to current calendar month)
+        const monthRange = getMonthRange(new Date());
+        const monthStartISO = formatDateISO(monthRange.start);
+        const monthEndISO = formatDateISO(monthRange.end);
+        const monthlyTasks = allTasks.filter(t => t.date >= monthStartISO && t.date <= monthEndISO);
+        const monthlyTotal = monthlyTasks.length;
+        const monthlyCompleted = monthlyTasks.filter(t => t.completed).length;
+        const monthlyRate = monthlyTotal > 0 ? Math.round((monthlyCompleted / monthlyTotal) * 100) : 0;
+
+        if (els.monthlyAnalysisValue) {
+            els.monthlyAnalysisValue.textContent = `${monthlyCompleted} / ${monthlyTotal}`;
+        }
+        if (els.monthlyAnalysisPercentage) {
+            els.monthlyAnalysisPercentage.textContent = `%${monthlyRate} tamamlandı`;
+        }
+
+        // 4. Category breakdown (based on filtered tasks)
         if (els.statsCategories) {
             const categories = {};
-            tasks.forEach(t => {
+            filteredTasks.forEach(t => {
                 const cat = t.category || 'Genel';
                 if (!categories[cat]) categories[cat] = { total: 0, completed: 0 };
                 categories[cat].total++;
@@ -456,9 +516,9 @@ window.UI = (() => {
             els.statsCategories.innerHTML = catHtml;
         }
 
-        // Update chart
+        // 5. Update chart
         if (window.Charts && window.Charts.updateOverall) {
-            window.Charts.updateOverall(tasks);
+            window.Charts.updateOverall(allTasks, range);
         }
     }
 

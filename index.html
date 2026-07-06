@@ -200,7 +200,7 @@
                 </div>
 
                 <div class="header-center">
-                    <div class="date-nav">
+                    <div id="date-nav" class="date-nav">
                         <button id="prev-date-btn" class="date-nav-btn" title="Önceki">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="15 18 9 12 15 6"/>
@@ -213,6 +213,13 @@
                                 <polyline points="9 18 15 12 9 6"/>
                             </svg>
                         </button>
+                    </div>
+
+                    <div id="stats-range-nav" class="date-nav" style="display: none;">
+                        <button class="stats-range-btn" data-range="7">7 Gün</button>
+                        <button class="stats-range-btn active" data-range="30">30 Gün</button>
+                        <button class="stats-range-btn" data-range="90">90 Gün</button>
+                        <button class="stats-range-btn" data-range="all">Tümü</button>
                     </div>
                 </div>
 
@@ -382,6 +389,25 @@
                         </div>
                         <span id="rate-stat" class="stat-card-value">%0</span>
                         <span class="stat-card-label">Başarı Oranı</span>
+                    </div>
+                </div>
+
+                <div class="stats-analysis-grid">
+                    <div class="stat-card glass-card stat-success analysis-card">
+                        <div class="analysis-header">
+                            <span class="analysis-icon">📅</span>
+                            <h4>Bu Haftanın Analizi</h4>
+                        </div>
+                        <span id="weekly-analysis-value" class="analysis-value">0 / 0</span>
+                        <span id="weekly-analysis-percentage" class="analysis-percentage">%0 tamamlandı</span>
+                    </div>
+                    <div class="stat-card glass-card stat-info analysis-card">
+                        <div class="analysis-header">
+                            <span class="analysis-icon">📆</span>
+                            <h4>Bu Ayın Analizi</h4>
+                        </div>
+                        <span id="monthly-analysis-value" class="analysis-value">0 / 0</span>
+                        <span id="monthly-analysis-percentage" class="analysis-percentage">%0 tamamlandı</span>
                     </div>
                 </div>
 
