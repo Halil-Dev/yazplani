@@ -532,6 +532,35 @@
         </div>
     </div>
 
+    <!-- RECURRING DELETE MODAL -->
+    <div id="recurring-delete-modal" class="modal">
+        <div id="recurring-delete-overlay" class="modal-overlay"></div>
+        <div class="modal-content glass-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Tekrarlanan Görevi Sil</h2>
+                <button id="recurring-delete-close-btn" class="modal-close-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 24px; text-align: center;">
+                <p style="margin-bottom: 20px; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+                    Bu görevin tekrarlanan diğer kopyaları da bulunuyor. Nasıl silmek istersiniz?
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button id="delete-only-this-btn" class="btn btn-secondary" style="justify-content: center; width: 100%;">
+                        Sadece Bu Günü Sil
+                    </button>
+                    <button id="delete-all-recurring-btn" class="btn btn-danger" style="justify-content: center; width: 100%;">
+                        Tüm Günlerden Sil (Tamamen Sil)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- FAB (Mobile) -->
     <button id="add-task-fab" class="fab">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

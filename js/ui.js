@@ -70,6 +70,11 @@ window.UI = (() => {
         els.taskReminderCheckbox = document.getElementById('task-reminder-checkbox');
         els.taskReminderTime = document.getElementById('task-reminder-time');
         els.deleteTaskBtn = document.getElementById('delete-task-btn');
+        els.recurringDeleteModal = document.getElementById('recurring-delete-modal');
+        els.recurringDeleteOverlay = document.getElementById('recurring-delete-overlay');
+        els.recurringDeleteCloseBtn = document.getElementById('recurring-delete-close-btn');
+        els.deleteOnlyThisBtn = document.getElementById('delete-only-this-btn');
+        els.deleteAllRecurringBtn = document.getElementById('delete-all-recurring-btn');
         els.loadingOverlay = document.getElementById('loading-overlay');
         els.toastContainer = document.getElementById('toast-container');
         els.sidebar = document.getElementById('sidebar');
@@ -865,6 +870,30 @@ window.UI = (() => {
         return div.innerHTML;
     }
 
+    let currentTaskToDelete = null;
+
+    function openRecurringDeleteModal(task) {
+        if (!els.recurringDeleteModal || !els.recurringDeleteOverlay) return;
+        currentTaskToDelete = task;
+
+        els.recurringDeleteModal.classList.add('active');
+        els.recurringDeleteOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeRecurringDeleteModal() {
+        if (!els.recurringDeleteModal || !els.recurringDeleteOverlay) return;
+        currentTaskToDelete = null;
+
+        els.recurringDeleteModal.classList.remove('active');
+        els.recurringDeleteOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function getCurrentTaskToDelete() {
+        return currentTaskToDelete;
+    }
+
     // ── Initialize cached elements on module load ────────────────────
     // Defer to make sure DOM is ready
     if (document.readyState === 'loading') {
@@ -900,6 +929,9 @@ window.UI = (() => {
         renderTaskItem,
         openTaskModal,
         closeTaskModal,
+        openRecurringDeleteModal,
+        closeRecurringDeleteModal,
+        getCurrentTaskToDelete,
         showToast,
         toggleTheme,
         loadSavedTheme,

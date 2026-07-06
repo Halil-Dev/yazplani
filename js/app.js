@@ -103,6 +103,47 @@ window.App = (() => {
             deleteTaskBtn.addEventListener('click', handleTaskDelete);
         }
 
+        // Recurring delete modal controls
+        const recurringDeleteCloseBtn = document.getElementById('recurring-delete-close-btn');
+        const recurringDeleteOverlay = document.getElementById('recurring-delete-overlay');
+        const deleteOnlyThisBtn = document.getElementById('delete-only-this-btn');
+        const deleteAllRecurringBtn = document.getElementById('delete-all-recurring-btn');
+
+        if (recurringDeleteCloseBtn) {
+            recurringDeleteCloseBtn.addEventListener('click', () => window.UI.closeRecurringDeleteModal());
+        }
+        if (recurringDeleteOverlay) {
+            recurringDeleteOverlay.addEventListener('click', () => window.UI.closeRecurringDeleteModal());
+        }
+        if (deleteOnlyThisBtn) {
+            deleteOnlyThisBtn.addEventListener('click', async () => {
+                const task = window.UI.getCurrentTaskToDelete();
+                if (task) {
+                    try {
+                        await window.DB.deleteTask(task.id);
+                    } catch (error) {
+                        console.error('Delete task error:', error);
+                    }
+                }
+                window.UI.closeRecurringDeleteModal();
+            });
+        }
+        if (deleteAllRecurringBtn) {
+            deleteAllRecurringBtn.addEventListener('click', async () => {
+                const task = window.UI.getCurrentTaskToDelete();
+                if (task) {
+                    try {
+                        if (window.confirm('Bu serideki tüm görevleri silmek istediğinize emin misiniz?')) {
+                            await window.DB.deleteRecurringTasks(task);
+                        }
+                    } catch (error) {
+                        console.error('Delete all recurring tasks error:', error);
+                    }
+                }
+                window.UI.closeRecurringDeleteModal();
+            });
+        }
+
         // Theme toggle
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
         if (themeToggleBtn) {
@@ -151,6 +192,7 @@ window.App = (() => {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 window.UI.closeTaskModal();
+                window.UI.closeRecurringDeleteModal();
             }
         });
 
@@ -213,8 +255,13 @@ window.App = (() => {
                 const taskId = deleteBtn.dataset.id;
                 if (!taskId) return;
 
-                if (window.confirm('Bu görevi silmek istediğinize emin misiniz?')) {
-                    window.DB.deleteTask(taskId);
+                const task = lastRenderedTasks.find(t => t.id === taskId);
+                if (task && task.recurring && task.recurring !== 'none') {
+                    window.UI.openRecurringDeleteModal(task);
+                } else {
+                    if (window.confirm('Bu görevi silmek istediğinize emin misiniz?')) {
+                        window.DB.deleteTask(taskId);
+                    }
                 }
                 return;
             }
@@ -399,11 +446,16 @@ window.App = (() => {
                 await window.DB.updateTask(taskId, taskData);
             } else {
                 // Add new task
-                await window.DB.addTask(taskData);
+                const docRef = await window.DB.addTask(taskData);
 
                 // Generate recurring tasks if needed
                 if (taskData.recurring && taskData.recurring !== 'none') {
-                    await window.DB.generateRecurringTasks(taskData, 30);
+                    const baseTask = {
+                        ...taskData,
+                        id: docRef.id,
+                        recurringGroupId: docRef.id
+                    };
+                    await window.DB.generateRecurringTasks(baseTask, 30);
                 }
             }
 
@@ -420,12 +472,18 @@ window.App = (() => {
 
         if (!taskId) return;
 
-        if (window.confirm('Bu görevi silmek istediğinize emin misiniz?')) {
-            try {
-                await window.DB.deleteTask(taskId);
-                window.UI.closeTaskModal();
-            } catch (error) {
-                console.error('Task delete error:', error);
+        const task = lastRenderedTasks.find(t => t.id === taskId);
+        if (task && task.recurring && task.recurring !== 'none') {
+            window.UI.closeTaskModal();
+            window.UI.openRecurringDeleteModal(task);
+        } else {
+            if (window.confirm('Bu görevi silmek istediğinize emin misiniz?')) {
+                try {
+                    await window.DB.deleteTask(taskId);
+                    window.UI.closeTaskModal();
+                } catch (error) {
+                    console.error('Task delete error:', error);
+                }
             }
         }
     }

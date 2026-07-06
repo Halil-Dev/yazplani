@@ -20,6 +20,7 @@ window.DB = (() => {
      */
     async function addTask(taskData) {
         try {
+            const docRef = getTasksRef().doc();
             const data = {
                 title: taskData.title || '',
                 description: taskData.description || '',
@@ -34,7 +35,10 @@ window.DB = (() => {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
-            const docRef = await getTasksRef().add(data);
+            if (data.recurring && data.recurring !== 'none') {
+                data.recurringGroupId = docRef.id;
+            }
+            await docRef.set(data);
             if (window.UI && window.UI.showToast) {
                 window.UI.showToast('Görev başarıyla eklendi.', 'success');
             }
@@ -83,6 +87,48 @@ window.DB = (() => {
             console.error('Delete task error:', error);
             if (window.UI && window.UI.showToast) {
                 window.UI.showToast('Görev silinirken bir hata oluştu.', 'error');
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Delete recurring tasks
+     */
+    async function deleteRecurringTasks(task) {
+        try {
+            let query = getTasksRef();
+            if (task.recurringGroupId) {
+                query = query.where('recurringGroupId', '==', task.recurringGroupId);
+            } else {
+                // Fallback for legacy tasks
+                query = query.where('title', '==', task.title)
+                             .where('recurring', '==', task.recurring);
+            }
+            
+            const snapshot = await query.get();
+            const batch = db.batch();
+            let count = 0;
+            
+            snapshot.docs.forEach(doc => {
+                batch.delete(doc.ref);
+                count++;
+            });
+            
+            if (count > 0) {
+                await batch.commit();
+                if (window.UI && window.UI.showToast) {
+                    window.UI.showToast(`${count} tekrarlanan görev silindi.`, 'success');
+                }
+            } else {
+                if (window.UI && window.UI.showToast) {
+                    window.UI.showToast('Silinecek tekrarlanan görev bulunamadı.', 'info');
+                }
+            }
+        } catch (error) {
+            console.error('Delete recurring tasks error:', error);
+            if (window.UI && window.UI.showToast) {
+                window.UI.showToast('Tekrarlanan görevler silinirken hata oluştu.', 'error');
             }
             throw error;
         }
@@ -267,6 +313,7 @@ window.DB = (() => {
                     category: baseTask.category || '',
                     completed: false,
                     recurring: baseTask.recurring,
+                    recurringGroupId: baseTask.recurringGroupId || baseTask.id || null,
                     reminder: baseTask.reminder || false,
                     reminderTime: baseTask.reminderTime || '',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -298,6 +345,7 @@ window.DB = (() => {
         addTask,
         updateTask,
         deleteTask,
+        deleteRecurringTasks,
         toggleTask,
         getTasksByDate,
         getTasksByDateRange,
