@@ -7,6 +7,7 @@ window.Charts = (() => {
 
     // ── Chart instances ──────────────────────────────────────────────
     let dailyChart = null;
+    let dailyCategoryChart = null;
     let weeklyChart = null;
     let monthlyChart = null;
     let overallChart = null;
@@ -208,6 +209,114 @@ window.Charts = (() => {
                 animation: {
                     animateRotate: true,
                     duration: 800,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+
+    // ── Chart: Daily Category Breakdown (Horizontal Bar) ──────────────
+
+    function updateDailyCategory(tasks) {
+        const canvas = document.getElementById('daily-category-chart-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        // Group tasks by category
+        const categories = {};
+        tasks.forEach(t => {
+            const cat = t.category || 'Genel';
+            if (!categories[cat]) {
+                categories[cat] = { total: 0, completed: 0 };
+            }
+            categories[cat].total++;
+            if (t.completed) {
+                categories[cat].completed++;
+            }
+        });
+
+        const labels = Object.keys(categories);
+        const totalData = labels.map(l => categories[l].total);
+        const completedData = labels.map(l => categories[l].completed);
+
+        // Destroy previous chart
+        if (dailyCategoryChart) {
+            dailyCategoryChart.destroy();
+            dailyCategoryChart = null;
+        }
+
+        // If no tasks, stop rendering
+        if (labels.length === 0) {
+            return;
+        }
+
+        const commonOpts = getCommonOptions(true); // show legend for two datasets
+        const theme = getThemeColors();
+
+        dailyCategoryChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Toplam Görev',
+                        data: totalData,
+                        backgroundColor: COLORS.accentAlpha,
+                        borderColor: COLORS.accent,
+                        borderWidth: 1.5,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    },
+                    {
+                        label: 'Tamamlanan',
+                        data: completedData,
+                        backgroundColor: COLORS.success,
+                        borderWidth: 0,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    }
+                ]
+            },
+            options: {
+                ...commonOpts,
+                indexAxis: 'y', // Makes the bar chart horizontal
+                plugins: {
+                    ...commonOpts.plugins,
+                    legend: {
+                        ...commonOpts.plugins.legend,
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: theme.text,
+                            font: { family: 'Inter', size: 10 },
+                            stepSize: 1,
+                            precision: 0
+                        },
+                        grid: {
+                            color: theme.grid,
+                            drawBorder: false
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: theme.text,
+                            font: { family: 'Inter', size: 11, weight: '500' }
+                        },
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 600,
                     easing: 'easeOutQuart'
                 }
             }
@@ -570,6 +679,7 @@ window.Charts = (() => {
 
     function destroy() {
         if (dailyChart) { dailyChart.destroy(); dailyChart = null; }
+        if (dailyCategoryChart) { dailyCategoryChart.destroy(); dailyCategoryChart = null; }
         if (weeklyChart) { weeklyChart.destroy(); weeklyChart = null; }
         if (monthlyChart) { monthlyChart.destroy(); monthlyChart = null; }
         if (overallChart) { overallChart.destroy(); overallChart = null; }
@@ -578,6 +688,7 @@ window.Charts = (() => {
     // ── Public API ───────────────────────────────────────────────────
     return {
         updateDaily,
+        updateDailyCategory,
         updateWeekly,
         updateMonthly,
         updateOverall,

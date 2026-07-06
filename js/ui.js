@@ -292,6 +292,9 @@ window.UI = (() => {
         if (window.Charts && window.Charts.updateDaily) {
             window.Charts.updateDaily(tasks);
         }
+        if (window.Charts && window.Charts.updateDailyCategory) {
+            window.Charts.updateDailyCategory(tasks);
+        }
     }
 
     function renderWeeklyView(tasks) {
