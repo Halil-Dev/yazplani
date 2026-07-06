@@ -825,49 +825,29 @@ input, select, textarea {
 
 /* Custom Checkbox */
 .task-checkbox {
-    position: relative;
     width: 22px;
     height: 22px;
-    flex-shrink: 0;
-}
-
-.task-checkbox input {
-    position: absolute;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    z-index: 2;
-}
-
-.task-checkbox .checkmark {
-    position: absolute;
-    inset: 0;
-    border: 2px solid var(--glass-border);
     border-radius: 50%;
+    border: 2px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
     transition: var(--transition);
+    flex-shrink: 0;
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
 }
 
-.task-checkbox input:hover + .checkmark {
+.task-checkbox:hover {
     border-color: var(--accent);
 }
 
-.task-checkbox input:checked + .checkmark {
+.task-checkbox.checked {
     background: var(--accent-gradient);
     border-color: transparent;
-}
-
-.task-checkbox input:checked + .checkmark::after {
-    content: '';
-    position: absolute;
-    top: 4px;
-    left: 7px;
-    width: 5px;
-    height: 9px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-    animation: checkmark 0.2s ease-out;
+    color: white;
 }
 
 /* Task Content */
