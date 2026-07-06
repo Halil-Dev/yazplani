@@ -459,8 +459,7 @@ window.Charts = (() => {
 
         // Build days data
         const labels = [];
-        const totalData = [];
-        const completedData = [];
+        const rateData = [];
 
         for (let i = daysCount - 1; i >= 0; i--) {
             const d = new Date(today);
@@ -471,14 +470,10 @@ window.Charts = (() => {
 
             const dayTasks = allTasks.filter(t => t.date === dateStr);
             if (dayTasks.length > 0) {
-                const totalCount = dayTasks.length;
-                const completedCount = dayTasks.filter(t => t.completed).length;
-                totalData.push(totalCount);
-                completedData.push(completedCount);
+                const completed = dayTasks.filter(t => t.completed).length;
+                rateData.push(Math.round((completed / dayTasks.length) * 100));
             } else {
-                // Keep null to avoid showing fake 0 values when there were no tasks
-                totalData.push(null);
-                completedData.push(null);
+                rateData.push(null); // Keep null to avoid showing fake 0% drops when there were no tasks
             }
         }
 
@@ -488,49 +483,33 @@ window.Charts = (() => {
             overallChart = null;
         }
 
-        const commonOpts = getCommonOptions(true);
+        const commonOpts = getCommonOptions(false); // hide legend for single dataset
         const theme = getThemeColors();
 
-        // Create gradient for completed tasks line
+        // Create gradient
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
-        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.3)');
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.02)');
 
         overallChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels,
-                datasets: [
-                    {
-                        label: 'Toplam Görev',
-                        data: totalData,
-                        borderColor: COLORS.accent,
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        pointBackgroundColor: COLORS.accent,
-                        pointBorderColor: isDark() ? '#1e293b' : '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 6,
-                        spanGaps: true
-                    },
-                    {
-                        label: 'Tamamlanan',
-                        data: completedData,
-                        borderColor: COLORS.success,
-                        backgroundColor: gradient,
-                        fill: true,
-                        borderWidth: 2,
-                        tension: 0.4,
-                        pointBackgroundColor: COLORS.success,
-                        pointBorderColor: isDark() ? '#1e293b' : '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 6,
-                        spanGaps: true
-                    }
-                ]
+                datasets: [{
+                    label: 'Tamamlanma Oranı (%)',
+                    data: rateData,
+                    borderColor: COLORS.accent,
+                    backgroundColor: gradient,
+                    fill: true,
+                    borderWidth: 2.5,
+                    tension: 0.4,
+                    pointBackgroundColor: COLORS.accent,
+                    pointBorderColor: isDark() ? '#1e293b' : '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    spanGaps: true
+                }]
             },
             options: {
                 ...commonOpts,
@@ -549,11 +528,12 @@ window.Charts = (() => {
                     },
                     y: {
                         beginAtZero: true,
+                        max: 100,
                         ticks: {
                             color: theme.text,
                             font: { family: 'Inter', size: 11 },
-                            stepSize: 1,
-                            precision: 0
+                            callback: value => `%${value}`,
+                            stepSize: 25
                         },
                         grid: {
                             color: theme.grid,
