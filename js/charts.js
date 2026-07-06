@@ -428,7 +428,7 @@ window.Charts = (() => {
                 const completed = dayTasks.filter(t => t.completed).length;
                 rateData.push(Math.round((completed / dayTasks.length) * 100));
             } else {
-                rateData.push(null); // No data for this day
+                rateData.push(0); // Set 0% for days without tasks to draw a continuous line
             }
         }
 
