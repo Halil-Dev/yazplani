@@ -426,6 +426,23 @@ window.Charts = (() => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
+        // Find the newest task date in the database (format YYYY-MM-DD)
+        let newestDate = new Date(today);
+        if (allTasks && allTasks.length > 0) {
+            const dates = allTasks.map(t => t.date).filter(Boolean).sort();
+            if (dates.length > 0) {
+                const maxDateStr = dates[dates.length - 1];
+                const maxDate = new Date(maxDateStr);
+                maxDate.setHours(0, 0, 0, 0);
+                if (maxDate > newestDate) {
+                    newestDate = maxDate;
+                }
+            }
+        }
+
+        // The end of our chart range is the maximum of newestDate and today
+        const endDate = newestDate;
+
         // Determine days count based on range
         let daysCount = 30;
         if (range === '7') {
@@ -446,7 +463,7 @@ window.Charts = (() => {
                     oldestDate.setHours(0, 0, 0, 0);
                     
                     // Calculate difference in days
-                    const diffTime = Math.abs(today - oldestDate);
+                    const diffTime = Math.abs(endDate - oldestDate);
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     daysCount = Math.max(diffDays + 1, 7); // Show at least 7 days
                 } else {
@@ -462,8 +479,8 @@ window.Charts = (() => {
         const rateData = [];
 
         for (let i = daysCount - 1; i >= 0; i--) {
-            const d = new Date(today);
-            d.setDate(today.getDate() - i);
+            const d = new Date(endDate);
+            d.setDate(endDate.getDate() - i);
             const dateStr = window.UI ? window.UI.formatDateISO(d) : '';
             const dayLabel = `${d.getDate()}/${d.getMonth() + 1}`;
             labels.push(dayLabel);
