@@ -161,9 +161,15 @@ window.Charts = (() => {
         const ctx = canvas.getContext('2d');
 
         const total = tasks.length;
-        const completed = tasks.filter(t => t.completed).length;
-        const pending = total - completed;
-        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+        const completedTasks = tasks.filter(t => t.completed);
+        const completedCount = completedTasks.length;
+        const pendingCount = total - completedCount;
+        const percentage = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+
+        // Calculate counts by priority for completed tasks
+        const highCompleted = completedTasks.filter(t => t.priority === 'high').length;
+        const mediumCompleted = completedTasks.filter(t => t.priority === 'medium').length;
+        const lowCompleted = completedTasks.filter(t => t.priority === 'low').length;
 
         // Update progress text
         const progressText = document.getElementById('daily-progress-text');
@@ -181,15 +187,30 @@ window.Charts = (() => {
 
         const commonOpts = getCommonOptions(false);
 
+        // Prepare chart data and colors based on tasks availability
+        let chartData = [];
+        let chartColors = [];
+        let chartLabels = [];
+
+        if (total > 0) {
+            // Push values only if they are greater than 0, or push all 4 to maintain order?
+            // To make Doughnut render correctly, we push all 4 segments.
+            chartData = [highCompleted, mediumCompleted, lowCompleted, pendingCount];
+            chartColors = [COLORS.danger, COLORS.warning, COLORS.success, COLORS.mutedLight];
+            chartLabels = ['Tamamlanan (Yüksek)', 'Tamamlanan (Orta)', 'Tamamlanan (Düşük)', 'Bekleyen'];
+        } else {
+            chartData = [0, 0, 0, 1];
+            chartColors = [COLORS.mutedLight, COLORS.mutedLight, COLORS.mutedLight, COLORS.mutedLight];
+            chartLabels = ['Yüksek', 'Orta', 'Düşük', 'Görev Yok'];
+        }
+
         dailyChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Tamamlanan', 'Bekleyen'],
+                labels: chartLabels,
                 datasets: [{
-                    data: total > 0 ? [completed, pending] : [0, 1],
-                    backgroundColor: total > 0
-                        ? [COLORS.success, COLORS.mutedLight]
-                        : [COLORS.mutedLight, COLORS.mutedLight],
+                    data: chartData,
+                    backgroundColor: chartColors,
                     borderWidth: 0,
                     cutout: '75%',
                     borderRadius: total > 0 ? 4 : 0
