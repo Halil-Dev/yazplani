@@ -87,6 +87,24 @@ window.UI = (() => {
         els.monthlyAnalysisValue = document.getElementById('monthly-analysis-value');
         els.monthlyAnalysisPercentage = document.getElementById('monthly-analysis-percentage');
         els.overallChartTitle = document.getElementById('overall-chart-title');
+        
+        els.customRecurringContainer = document.getElementById('custom-recurring-container');
+        els.customDaysGrid = document.getElementById('custom-days-grid');
+        
+        // Dynamically build 1-31 buttons if grid exists and is empty
+        if (els.customDaysGrid && els.customDaysGrid.children.length === 0) {
+            for (let day = 1; day <= 31; day++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'custom-day-btn';
+                btn.dataset.day = day;
+                btn.textContent = day;
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                });
+                els.customDaysGrid.appendChild(btn);
+            }
+        }
     }
 
     // ── Date helpers ─────────────────────────────────────────────────
@@ -626,6 +644,16 @@ window.UI = (() => {
         if (els.taskForm) els.taskForm.reset();
         if (els.taskIdHidden) els.taskIdHidden.value = '';
 
+        // Reset custom days selection buttons
+        if (els.customDaysGrid) {
+            els.customDaysGrid.querySelectorAll('.custom-day-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+        if (els.customRecurringContainer) {
+            els.customRecurringContainer.style.display = 'none';
+        }
+
         if (task) {
             // Editing mode
             if (els.modalTitle) els.modalTitle.textContent = 'Görevi Düzenle';
@@ -637,7 +665,21 @@ window.UI = (() => {
             if (els.taskTimeInput) els.taskTimeInput.value = task.time || '';
             if (els.taskPrioritySelect) els.taskPrioritySelect.value = task.priority || 'medium';
             if (els.taskCategoryInput) els.taskCategoryInput.value = task.category || '';
-            if (els.taskRecurringSelect) els.taskRecurringSelect.value = task.recurring || 'none';
+            if (els.taskRecurringSelect) {
+                els.taskRecurringSelect.value = task.recurring || 'none';
+            }
+            if (task.recurring === 'custom' && els.customRecurringContainer) {
+                els.customRecurringContainer.style.display = 'block';
+                const customDays = task.customDays || [];
+                if (els.customDaysGrid) {
+                    els.customDaysGrid.querySelectorAll('.custom-day-btn').forEach(btn => {
+                        const dayNum = parseInt(btn.dataset.day);
+                        if (customDays.includes(dayNum)) {
+                            btn.classList.add('active');
+                        }
+                    });
+                }
+            }
             if (els.taskReminderCheckbox) els.taskReminderCheckbox.checked = task.reminder || false;
             if (els.taskReminderTime) {
                 els.taskReminderTime.value = task.reminderTime || '';
@@ -894,6 +936,12 @@ window.UI = (() => {
         return currentTaskToDelete;
     }
 
+    function getSelectedCustomDays() {
+        if (!els.customDaysGrid) return [];
+        const activeBtns = els.customDaysGrid.querySelectorAll('.custom-day-btn.active');
+        return Array.from(activeBtns).map(btn => parseInt(btn.dataset.day));
+    }
+
     // ── Initialize cached elements on module load ────────────────────
     // Defer to make sure DOM is ready
     if (document.readyState === 'loading') {
@@ -932,6 +980,7 @@ window.UI = (() => {
         openRecurringDeleteModal,
         closeRecurringDeleteModal,
         getCurrentTaskToDelete,
+        getSelectedCustomDays,
         showToast,
         toggleTheme,
         loadSavedTheme,

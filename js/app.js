@@ -188,6 +188,16 @@ window.App = (() => {
             });
         }
 
+        // Recurring dropdown change toggle
+        const taskRecurringSelect = document.getElementById('task-recurring-select');
+        const customRecurringContainer = document.getElementById('custom-recurring-container');
+        if (taskRecurringSelect && customRecurringContainer) {
+            taskRecurringSelect.addEventListener('change', () => {
+                const isCustom = taskRecurringSelect.value === 'custom';
+                customRecurringContainer.style.display = isCustom ? 'block' : 'none';
+            });
+        }
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -434,9 +444,15 @@ window.App = (() => {
             priority: taskPrioritySelect ? taskPrioritySelect.value : 'medium',
             category: taskCategoryInput ? taskCategoryInput.value.trim() : '',
             recurring: taskRecurringSelect ? taskRecurringSelect.value : 'none',
+            customDays: taskRecurringSelect && taskRecurringSelect.value === 'custom' ? window.UI.getSelectedCustomDays() : [],
             reminder: taskReminderCheckbox ? taskReminderCheckbox.checked : false,
             reminderTime: taskReminderTime ? taskReminderTime.value : ''
         };
+
+        if (taskData.recurring === 'custom' && taskData.customDays.length === 0) {
+            window.UI.showToast('Lütfen en az bir gün seçin.', 'warning');
+            return;
+        }
 
         const taskId = taskIdHidden ? taskIdHidden.value : '';
 

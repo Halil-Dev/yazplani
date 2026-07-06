@@ -30,6 +30,7 @@ window.DB = (() => {
                 category: taskData.category || '',
                 completed: taskData.completed || false,
                 recurring: taskData.recurring || 'none',
+                customDays: taskData.customDays || [],
                 reminder: taskData.reminder || false,
                 reminderTime: taskData.reminderTime || '',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -290,6 +291,24 @@ window.DB = (() => {
                     case 'monthly':
                         nextDate.setMonth(currentDate.getMonth() + i);
                         break;
+                    case 'custom': {
+                        const customDays = new Set((baseTask.customDays || []).map(Number));
+                        if (customDays.size === 0) return;
+                        
+                        let loopDate = new Date(currentDate);
+                        let found = false;
+                        for (let dayOffset = 1; dayOffset <= 365; dayOffset++) {
+                            loopDate.setDate(loopDate.getDate() + 1);
+                            if (customDays.has(loopDate.getDate())) {
+                                nextDate.setTime(loopDate.getTime());
+                                currentDate.setTime(loopDate.getTime());
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) return;
+                        break;
+                    }
                     default:
                         return;
                 }
@@ -314,6 +333,7 @@ window.DB = (() => {
                     completed: false,
                     recurring: baseTask.recurring,
                     recurringGroupId: baseTask.recurringGroupId || baseTask.id || null,
+                    customDays: baseTask.customDays || [],
                     reminder: baseTask.reminder || false,
                     reminderTime: baseTask.reminderTime || '',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
