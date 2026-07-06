@@ -88,6 +88,10 @@ window.UI = (() => {
         els.monthlyAnalysisPercentage = document.getElementById('monthly-analysis-percentage');
         els.overallChartTitle = document.getElementById('overall-chart-title');
         
+        els.monthYearPickerContainer = document.getElementById('month-year-picker-container');
+        els.monthSelect = document.getElementById('month-select');
+        els.yearSelect = document.getElementById('year-select');
+        
         els.customRecurringContainer = document.getElementById('custom-recurring-container');
         els.customDaysGrid = document.getElementById('custom-days-grid');
         els.customMonthsGrid = document.getElementById('custom-months-grid');
@@ -256,6 +260,10 @@ window.UI = (() => {
     function updateDateLabel() {
         if (!els.currentDateLabel) return;
 
+        // Hide month-year-picker by default
+        if (els.monthYearPickerContainer) els.monthYearPickerContainer.style.display = 'none';
+        els.currentDateLabel.style.display = 'inline-block';
+
         switch (currentPage) {
             case 'daily':
                 els.currentDateLabel.textContent = formatDate(currentDate);
@@ -275,7 +283,35 @@ window.UI = (() => {
                 break;
             }
             case 'monthly':
-                els.currentDateLabel.textContent = `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+                if (els.monthYearPickerContainer && els.monthSelect && els.yearSelect) {
+                    els.currentDateLabel.style.display = 'none';
+                    els.monthYearPickerContainer.style.display = 'flex';
+                    
+                    // Populate selects if empty
+                    if (els.monthSelect.children.length === 0) {
+                        MONTH_NAMES.forEach((m, idx) => {
+                            const opt = document.createElement('option');
+                            opt.value = idx;
+                            opt.textContent = m;
+                            els.monthSelect.appendChild(opt);
+                        });
+                    }
+                    if (els.yearSelect.children.length === 0) {
+                        const currentYear = new Date().getFullYear();
+                        for (let y = currentYear - 5; y <= currentYear + 10; y++) {
+                            const opt = document.createElement('option');
+                            opt.value = y;
+                            opt.textContent = y;
+                            els.yearSelect.appendChild(opt);
+                        }
+                    }
+                    
+                    // Set current values
+                    els.monthSelect.value = currentDate.getMonth();
+                    els.yearSelect.value = currentDate.getFullYear();
+                } else {
+                    els.currentDateLabel.textContent = `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+                }
                 break;
             case 'stats':
                 els.currentDateLabel.textContent = 'Genel İstatistikler';
@@ -435,17 +471,17 @@ window.UI = (() => {
             const dayTasks = tasksByDate[dateStr] || [];
             const isToday = dateStr === todayISO;
 
-            const completedTasks = dayTasks.filter(t => t.completed);
-            const pendingTasks = dayTasks.filter(t => !t.completed);
-            const highPriorityTasks = pendingTasks.filter(t => t.priority === 'high');
+            const dotsHtml = dayTasks.map(t => {
+                const priorityClass = t.priority || 'medium'; // 'high', 'medium', 'low'
+                const completedClass = t.completed ? 'completed' : '';
+                return `<span class="calendar-dot ${priorityClass} ${completedClass}" title="${escapeHtml(t.title)} (${PRIORITY_LABELS[t.priority] || t.priority})"></span>`;
+            }).join('');
 
             html += `
                 <div class="calendar-cell ${isToday ? 'today' : ''} ${dayTasks.length > 0 ? 'has-tasks' : ''}" data-date="${dateStr}">
                     <span class="calendar-date">${day}</span>
                     <div class="calendar-dots">
-                        ${completedTasks.length > 0 ? `<span class="calendar-dot completed" title="${completedTasks.length} tamamlanmış"></span>` : ''}
-                        ${pendingTasks.length > 0 ? `<span class="calendar-dot pending" title="${pendingTasks.length} bekleyen"></span>` : ''}
-                        ${highPriorityTasks.length > 0 ? `<span class="calendar-dot high-priority" title="${highPriorityTasks.length} yüksek öncelik"></span>` : ''}
+                        ${dotsHtml}
                     </div>
                     ${dayTasks.length > 0 ? `<span class="calendar-task-count">${dayTasks.length}</span>` : ''}
                 </div>

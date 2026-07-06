@@ -205,7 +205,24 @@ window.App = (() => {
                 window.UI.closeRecurringDeleteModal();
             }
         });
-
+        // Month and Year selector change listeners
+        const monthSelect = document.getElementById('month-select');
+        const yearSelect = document.getElementById('year-select');
+        if (monthSelect && yearSelect) {
+            const handleMonthYearChange = () => {
+                const selectedMonth = parseInt(monthSelect.value);
+                const selectedYear = parseInt(yearSelect.value);
+                
+                window.UI.currentDate.setMonth(selectedMonth);
+                window.UI.currentDate.setFullYear(selectedYear);
+                window.UI.currentDate = new Date(window.UI.currentDate);
+                
+                window.UI.updateDateLabel();
+                loadCurrentView();
+            };
+            monthSelect.addEventListener('change', handleMonthYearChange);
+            yearSelect.addEventListener('change', handleMonthYearChange);
+        }
         // Stats range buttons
         document.addEventListener('click', (e) => {
             const rangeBtn = e.target.closest('.stats-range-btn');
