@@ -2157,3 +2157,43 @@ select.form-input {
     box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
+/* Custom Months Selection Grid */
+.custom-months-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--glass-border);
+    padding: 12px;
+    border-radius: var(--border-radius-xs);
+}
+
+.custom-month-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--glass-border);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.custom-month-btn:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+.custom-month-btn.active {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+

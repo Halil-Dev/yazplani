@@ -90,6 +90,7 @@ window.UI = (() => {
         
         els.customRecurringContainer = document.getElementById('custom-recurring-container');
         els.customDaysGrid = document.getElementById('custom-days-grid');
+        els.customMonthsGrid = document.getElementById('custom-months-grid');
         
         // Dynamically build 1-31 buttons if grid exists and is empty
         if (els.customDaysGrid && els.customDaysGrid.children.length === 0) {
@@ -104,6 +105,25 @@ window.UI = (() => {
                 });
                 els.customDaysGrid.appendChild(btn);
             }
+        }
+
+        // Dynamically build month buttons if grid exists and is empty
+        if (els.customMonthsGrid && els.customMonthsGrid.children.length === 0) {
+            const monthNames = [
+                'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+                'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+            ];
+            monthNames.forEach((monthName, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'custom-month-btn';
+                btn.dataset.month = idx + 1; // 1-12
+                btn.textContent = monthName;
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                });
+                els.customMonthsGrid.appendChild(btn);
+            });
         }
     }
 
@@ -650,6 +670,12 @@ window.UI = (() => {
                 btn.classList.remove('active');
             });
         }
+        // Reset custom months selection buttons
+        if (els.customMonthsGrid) {
+            els.customMonthsGrid.querySelectorAll('.custom-month-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
         if (els.customRecurringContainer) {
             els.customRecurringContainer.style.display = 'none';
         }
@@ -675,6 +701,15 @@ window.UI = (() => {
                     els.customDaysGrid.querySelectorAll('.custom-day-btn').forEach(btn => {
                         const dayNum = parseInt(btn.dataset.day);
                         if (customDays.includes(dayNum)) {
+                            btn.classList.add('active');
+                        }
+                    });
+                }
+                const customMonths = task.customMonths || [];
+                if (els.customMonthsGrid) {
+                    els.customMonthsGrid.querySelectorAll('.custom-month-btn').forEach(btn => {
+                        const monthNum = parseInt(btn.dataset.month);
+                        if (customMonths.includes(monthNum)) {
                             btn.classList.add('active');
                         }
                     });
@@ -942,6 +977,12 @@ window.UI = (() => {
         return Array.from(activeBtns).map(btn => parseInt(btn.dataset.day));
     }
 
+    function getSelectedCustomMonths() {
+        if (!els.customMonthsGrid) return [];
+        const activeBtns = els.customMonthsGrid.querySelectorAll('.custom-month-btn.active');
+        return Array.from(activeBtns).map(btn => parseInt(btn.dataset.month));
+    }
+
     // ── Initialize cached elements on module load ────────────────────
     // Defer to make sure DOM is ready
     if (document.readyState === 'loading') {
@@ -981,6 +1022,7 @@ window.UI = (() => {
         closeRecurringDeleteModal,
         getCurrentTaskToDelete,
         getSelectedCustomDays,
+        getSelectedCustomMonths,
         showToast,
         toggleTheme,
         loadSavedTheme,

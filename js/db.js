@@ -31,6 +31,7 @@ window.DB = (() => {
                 completed: taskData.completed || false,
                 recurring: taskData.recurring || 'none',
                 customDays: taskData.customDays || [],
+                customMonths: taskData.customMonths || [],
                 reminder: taskData.reminder || false,
                 reminderTime: taskData.reminderTime || '',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -293,13 +294,17 @@ window.DB = (() => {
                         break;
                     case 'custom': {
                         const customDays = new Set((baseTask.customDays || []).map(Number));
-                        if (customDays.size === 0) return;
+                        const customMonths = new Set((baseTask.customMonths || []).map(Number));
+                        if (customDays.size === 0 || customMonths.size === 0) return;
                         
                         let loopDate = new Date(currentDate);
                         let found = false;
-                        for (let dayOffset = 1; dayOffset <= 365; dayOffset++) {
+                        for (let dayOffset = 1; dayOffset <= 1095; dayOffset++) {
                             loopDate.setDate(loopDate.getDate() + 1);
-                            if (customDays.has(loopDate.getDate())) {
+                            const currentMonthNum = loopDate.getMonth() + 1; // 1-12
+                            const currentDayNum = loopDate.getDate(); // 1-31
+                            
+                            if (customMonths.has(currentMonthNum) && customDays.has(currentDayNum)) {
                                 nextDate.setTime(loopDate.getTime());
                                 currentDate.setTime(loopDate.getTime());
                                 found = true;
@@ -334,6 +339,7 @@ window.DB = (() => {
                     recurring: baseTask.recurring,
                     recurringGroupId: baseTask.recurringGroupId || baseTask.id || null,
                     customDays: baseTask.customDays || [],
+                    customMonths: baseTask.customMonths || [],
                     reminder: baseTask.reminder || false,
                     reminderTime: baseTask.reminderTime || '',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),

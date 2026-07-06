@@ -445,13 +445,20 @@ window.App = (() => {
             category: taskCategoryInput ? taskCategoryInput.value.trim() : '',
             recurring: taskRecurringSelect ? taskRecurringSelect.value : 'none',
             customDays: taskRecurringSelect && taskRecurringSelect.value === 'custom' ? window.UI.getSelectedCustomDays() : [],
+            customMonths: taskRecurringSelect && taskRecurringSelect.value === 'custom' ? window.UI.getSelectedCustomMonths() : [],
             reminder: taskReminderCheckbox ? taskReminderCheckbox.checked : false,
             reminderTime: taskReminderTime ? taskReminderTime.value : ''
         };
 
-        if (taskData.recurring === 'custom' && taskData.customDays.length === 0) {
-            window.UI.showToast('Lütfen en az bir gün seçin.', 'warning');
-            return;
+        if (taskData.recurring === 'custom') {
+            if (taskData.customDays.length === 0) {
+                window.UI.showToast('Lütfen en az bir gün seçin.', 'warning');
+                return;
+            }
+            if (taskData.customMonths.length === 0) {
+                window.UI.showToast('Lütfen en az bir ay seçin.', 'warning');
+                return;
+            }
         }
 
         const taskId = taskIdHidden ? taskIdHidden.value : '';
