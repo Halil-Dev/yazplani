@@ -1,17 +1,20 @@
-// Firebase configuration - USER MUST REPLACE WITH THEIR OWN CONFIG
+// Firebase configuration - Read from environment variables via Vite
 const firebaseConfig = {
-  apiKey: "AIzaSyB8V_a793PswmxQPH225eISle4tOhG0lMo",
-  authDomain: "yazplani.firebaseapp.com",
-  projectId: "yazplani",
-  storageBucket: "yazplani.firebasestorage.app",
-  messagingSenderId: "1098170662232",
-  appId: "1:1098170662232:web:dfa00d230f088a05faf92d",
-  measurementId: "G-JXZG3J4GCQ"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// Bind to window to allow access from other modules
+window.auth = auth;
+window.db = db;
 
 // Enable offline persistence
 db.enablePersistence().catch(err => {
